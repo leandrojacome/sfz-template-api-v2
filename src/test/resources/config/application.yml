@@ -1,0 +1,26 @@
+
+server:
+  address: localhost
+  port: 10350
+
+spring:
+  config:
+    import: 'optional:configserver:'
+  profiles:
+    active: test
+  jmx:
+    enabled: false
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:oracle:thin:@localhost:1521:DBIC
+    username: kratos
+    password: godofwar
+
+eureka:
+  client:
+    enabled: false
+
+ribbon:
+  eureka:
+    enabled: false
+

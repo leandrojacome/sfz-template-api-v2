@@ -1,0 +1,14 @@
+
+# Caso precise informar certificados CA para o vault passe as propriedades
+# - vault.ssl.trust-store-type=pem
+# - vault.ssl.trust-store={{caminho_para_cadeia}}.pem
+
+vault:
+    uri: https://vault.sefaz.al.gov.br:8200
+    authentication: APPROLE
+    app-role:
+        role-id: ROLE_ID_DEVE_SER_PREENCHIDO
+        secret-id: SECRET_ID_DEVE_SER_PREENCHIDO
+
+sefaz-vault:
+    secrets-path: secret/sefaz/${AMBIENTE}/apps/${spring.application.name}
