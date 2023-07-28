@@ -1,0 +1,12 @@
+include:
+  - project: "sefaz-al/ti/arquitetura/devops/gitlab-templates"
+    ref: main
+    file:
+      - java-api-pipeline.yml
+
+variables:
+    TOOLS_MAVEN_VERSION: "3.6"
+    TOOLS_JAVA_VERSION: "17"
+    TEST_JUNIT_REPORTS_ARTIFACTS: "$CI_PROJECT_DIR/target/surefire-reports/TEST-*.xml"
+    PUSH_IMAGE_SCRIPT: "mvn jib:build"
+    SKIP_SONARQUBE_ANALYSIS: "true"
