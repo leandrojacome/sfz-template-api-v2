@@ -1,1 +1,5 @@
 # É recomendado configurar este profile via cloud config
+
+spring:
+  config:
+    import: "configserver:http://admin:admin@jhipster-registry:8761/config"
