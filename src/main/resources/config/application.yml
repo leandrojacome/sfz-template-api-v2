@@ -48,12 +48,14 @@ management:
       enabled: true
   endpoint:
     health:
+      probes:
+        enabled: true
       show-details: always
       group:
         liveness:
           include: livenessState
         readiness:
-          include: readinessState
+          include: readinessState, db
   metrics:
     enable:
       http: true
