@@ -14,3 +14,10 @@ eureka:
     service-url:
       defaultZone: http://admin:admin@localhost:8761/eureka/
     enabled: true
+
+sefaz:
+  logging:
+    logstash:
+      enabled: true
+      host: log.sefaz.al.gov.br
+

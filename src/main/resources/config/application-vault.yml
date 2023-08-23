@@ -10,5 +10,6 @@ vault:
         role-id: ROLE_ID_DEVE_SER_PREENCHIDO
         secret-id: SECRET_ID_DEVE_SER_PREENCHIDO
 
-sefaz-vault:
-    secrets-path: secret/sefaz/${AMBIENTE}/apps/${spring.application.name}
+sefaz:
+    vault:
+        secrets-path: secret/sefaz/${AMBIENTE}/apps/${spring.application.name}

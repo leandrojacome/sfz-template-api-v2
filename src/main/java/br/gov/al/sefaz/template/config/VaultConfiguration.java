@@ -10,7 +10,7 @@ import org.springframework.vault.config.EnvironmentVaultConfiguration;
 @Profile("vault")
 @Import(EnvironmentVaultConfiguration.class)
 @VaultPropertySource(
-        value = "${sefaz-vault.secrets-path}",
+        value = "${sefaz.vault.secrets-path}",
         propertyNamePrefix = "vault."
 )
 public class VaultConfiguration {
