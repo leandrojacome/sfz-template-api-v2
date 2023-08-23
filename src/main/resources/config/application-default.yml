@@ -18,6 +18,5 @@ eureka:
 sefaz:
   logging:
     logstash:
-      enabled: true
-      host: log.sefaz.al.gov.br
+      enabled: false
 
