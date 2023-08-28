@@ -1,4 +1,4 @@
-package br.gov.al.sefaz.template.logging;
+package br.gov.al.sefaz.template.config;
 
 import br.gov.al.sefaz.logging.spring.EnableSefazLogging;
 import org.springframework.context.annotation.Configuration;
