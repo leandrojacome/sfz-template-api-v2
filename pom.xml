@@ -24,7 +24,36 @@
 
         <docker.registry.url>repositorio-push.sefaz.al.gov.br</docker.registry.url>
 		<docker.imagename>sefaz/${project.artifactId}</docker.imagename>
+
+        <repositorio.base.url>http://repositorio-v2.sefaz.al.gov.br</repositorio.base.url>
+        <repositorio.releases.url>${repositorio.base.url}/repository/maven-sefaz-releases</repositorio.releases.url>
+        <repositorio.snapshots.url>${repositorio.base.url}/repository/maven-sefaz-snapshots</repositorio.snapshots.url>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>repositorio.sefaz</id>
+            <name>Repositório de releases da SEFAZ</name>
+            <url>${repositorio.releases.url}</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>repositorio.sefaz</id>
+            <name>Repositório de snapshots da SEFAZ</name>
+            <url>${repositorio.snapshots.url}</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>
