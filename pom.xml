@@ -32,7 +32,7 @@
 
     <repositories>
         <repository>
-            <id>repositorio.sefaz</id>
+            <id>repositorio.sefaz.releases</id>
             <name>Repositório de releases da SEFAZ</name>
             <url>${repositorio.releases.url}</url>
             <releases>
@@ -43,7 +43,7 @@
             </snapshots>
         </repository>
         <repository>
-            <id>repositorio.sefaz</id>
+            <id>repositorio.sefaz.snapshots</id>
             <name>Repositório de snapshots da SEFAZ</name>
             <url>${repositorio.snapshots.url}</url>
             <releases>
