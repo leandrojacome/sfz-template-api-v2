@@ -4,11 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.9</version>
+        <groupId>br.gov.al.sefaz.architecture</groupId>
+        <artifactId>sfz-architecture-bom</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
+
     <groupId>br.gov.al.sefaz</groupId>
     <artifactId>sfz-template-api</artifactId>
     <version>2.0.0-SNAPSHOT</version>
@@ -16,58 +17,14 @@
     <description>Projeto template para API's</description>
 
     <properties>
-        <java.version>17</java.version>
-        <spring-cloud.version>2022.0.1</spring-cloud.version>
-        <spring-vault.version>3.0.3</spring-vault.version>
-        <jib-maven-plugin.version>3.3.0</jib-maven-plugin.version>
-        <problem-spring-web.version>0.29.1</problem-spring-web.version>
-
-        <docker.registry.url>repositorio-push.sefaz.al.gov.br</docker.registry.url>
-		<docker.imagename>sefaz/${project.artifactId}</docker.imagename>
-
-        <repositorio.base.url>http://repositorio-v2.sefaz.al.gov.br</repositorio.base.url>
-        <repositorio.releases.url>${repositorio.base.url}/repository/maven-sefaz-releases</repositorio.releases.url>
-        <repositorio.snapshots.url>${repositorio.base.url}/repository/maven-sefaz-snapshots</repositorio.snapshots.url>
+        <!-- Propriedades específicas do projeto -->
     </properties>
 
-    <repositories>
-        <repository>
-            <id>repositorio.sefaz.releases</id>
-            <name>Repositório de releases da SEFAZ</name>
-            <url>${repositorio.releases.url}</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>repositorio.sefaz.snapshots</id>
-            <name>Repositório de snapshots da SEFAZ</name>
-            <url>${repositorio.snapshots.url}</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
+        <dependency>
+            <groupId>br.gov.al.sefaz.architecture</groupId>
+            <artifactId>sfz-logging-spring</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -77,22 +34,21 @@
             <artifactId>spring-boot-starter-data-jdbc</artifactId>
         </dependency>
         <dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-		</dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+        </dependency>
         <dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-		</dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.vault</groupId>
             <artifactId>spring-vault-core</artifactId>
-            <version>${spring-vault.version}</version>
         </dependency>
         <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc11</artifactId>
@@ -100,22 +56,16 @@
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
-            <version>7.4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.zalando</groupId>
             <artifactId>problem-spring-web-starter</artifactId>
-            <version>${problem-spring-web.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>br.gov.al.sefaz.architecture</groupId>
-            <artifactId>sfz-logging-spring</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -126,33 +76,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
             <plugin>
-				<groupId>com.google.cloud.tools</groupId>
-				<artifactId>jib-maven-plugin</artifactId>
-				<version>${jib-maven-plugin.version}</version>
-				<configuration>
-					<from>
-						<image>eclipse-temurin:17-jdk-focal</image>
-					</from>
-					<to>
-						<image>${docker.registry.url}/${docker.imagename}:${project.version}</image>
-					</to>
-					<allowInsecureRegistries>true</allowInsecureRegistries>
-					<container>
-						<entrypoint>
-							<shell>bash</shell>
-							<option>-c</option>
-							<arg>chmod +x /entrypoint.sh &amp;&amp; sync &amp;&amp; /entrypoint.sh</arg>
-						</entrypoint>
-						<ports>
-							<port>8080</port>
-						</ports>
-						<environment>
-							<SPRING_OUTPUT_ANSI_ENABLED>ALWAYS</SPRING_OUTPUT_ANSI_ENABLED>
-						</environment>
-						<creationTime>USE_CURRENT_TIMESTAMP</creationTime>
-					</container>
-				</configuration>
-			</plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 
