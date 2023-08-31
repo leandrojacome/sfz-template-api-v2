@@ -13,3 +13,8 @@ vault:
 sefaz:
     vault:
         secrets-path: secret/sefaz/${AMBIENTE}/apps/${spring.application.name}
+
+spring:
+  datasource:
+    username: ${vault.datasource-username}
+    password: ${vault.datasource-password}
