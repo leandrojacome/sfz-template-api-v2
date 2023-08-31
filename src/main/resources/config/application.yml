@@ -7,6 +7,11 @@ spring:
   jmx:
     enabled: true
 
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      auto-commit: false
+
 eureka:
   client:
     service-url:
