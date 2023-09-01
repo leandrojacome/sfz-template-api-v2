@@ -11,6 +11,7 @@ spring:
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       auto-commit: false
+      connection-init-sql: "BEGIN ADMSEG001.PC_SEG_ACESSO.SP_SEG_VALIDAACESSO; END;"
 
 eureka:
   client:
