@@ -4,7 +4,6 @@ spring:
   config:
     import: "optional:configserver:http://admin:admin@localhost:8761/config"
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
     url: jdbc:oracle:thin:@localhost:1521:DBIC
     username: admdba006
     password: admdba006
