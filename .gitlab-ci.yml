@@ -1,12 +1,159 @@
-include:
-  - project: "sefaz-al/ti/arquitetura/devops/gitlab-templates"
-    ref: main
-    file:
-      - java-api-pipeline.yml
+---
+stages:
+  - build
+  - test
+  - analysis
+  - publish
+  - deploy
 
 variables:
-    TOOLS_MAVEN_VERSION: "3.6"
-    TOOLS_JAVA_VERSION: "17"
-    TEST_JUNIT_REPORTS_ARTIFACTS: "$CI_PROJECT_DIR/target/surefire-reports/TEST-*.xml"
-    PUSH_IMAGE_SCRIPT: "mvn jib:build"
-    SKIP_SONARQUBE_ANALYSIS: "true"
+  TZ: America/Maceio
+  DOCKER_DRIVER: overlay2
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  MAVEN_COMMON_ARGS: "-B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
+  TOOLS_JAVA_VERSION: "17"
+  TOOLS_MAVEN_VERSION: "3.6"
+  TOOLS_EXTRAS: ""
+  BUILD_SCRIPT: "mvn -Pprod package -DskipTests $MAVEN_COMMON_ARGS"
+  TEST_MONTADOR_CONTEXTO_API_VERSION: "1.0.7.20190816114610"
+  TEST_DBIC_VERSION: "latest"
+  TEST_SCRIPT: "mvn verify -U -Dspring.datasource.url=jdbc:oracle:thin:@dbic:1521:DBIC -Dmontador-contexto.url=http://montador-contexto:9092/api/montador $MAVEN_COMMON_ARGS"
+  TEST_JUNIT_REPORTS_ARTIFACTS: target/surefire-reports/TEST-*.xml
+  SKIP_JAVA_TESTS: "false"
+  PUSH_IMAGE_SCRIPT: "mvn jib:build"
+  ANALYSIS_PROJECT_KEY: $CI_PROJECT_NAME
+  SKIP_SONARQUBE_ANALYSIS: "false"
+  SKIP_DEPENDENCY_CHECK_ANALYSIS: "true"
+  ANALYSIS_SCRIPT: >
+    mvn sonar:sonar -Dsonar.projectKey=$(echo $ANALYSIS_PROJECT_KEY | sed 's/\//__/g') -Dsonar.qualitygate.wait=true $MAVEN_COMMON_ARGS
+
+.configure_build_environment: &configure_build_environment
+    - mkdir -p ~/.m2/ && ln -sf "$MAVEN_SETTINGS" ~/.m2/settings.xml
+    - sfz-tool set java=$TOOLS_JAVA_VERSION maven=$TOOLS_MAVEN_VERSION $TOOLS_EXTRAS
+    - mvn --version
+    - java -version
+
+.execute_database_scripts: &execute_database_scripts
+  - rm -rf ./sfz-database && git clone https://gitlab.sefaz.al.gov.br/sefaz-al/ti/arquitetura/sfz-database.git
+  - mvn -q -f ./sfz-database install -Penv-ci $MAVEN_COMMON_ARGS
+
+services:
+  - name: repositorio-docker.sefaz.al.gov.br/sefaz/docker-dind:20.10.202306161528
+    alias: docker
+
+default:
+  image: repositorio-docker.sefaz.al.gov.br/sefaz/ci-cd-image:1.1.0.202306161610
+  before_script:
+    - *configure_build_environment
+  after_script:
+    - ls -lah target/
+
+build:
+  stage: build
+  script:
+    - eval $BUILD_SCRIPT
+  artifacts:
+    paths:
+      - target/*
+    expire_in: 2 days
+
+tests:
+  stage: test
+  variables:
+    ORACLE_HOST: dbic
+    DBIC_HOST: dbic
+    CI_DEBUG_SERVICES: "true"
+    FF_NETWORK_PER_BUILD: "true"
+  services:
+    - name: repositorio-docker.sefaz.al.gov.br/sefaz/dbic:$TEST_DBIC_VERSION
+      alias: dbic
+    - name: repositorio-docker.sefaz.al.gov.br/sefaz/montador-contexto-api:$TEST_MONTADOR_CONTEXTO_API_VERSION
+      alias: montador-contexto
+      variables:
+        SPRING_DATASOURCE_LOCAL_URL: jdbc:oracle:thin:@dbic:1521:DBIC
+  #TODO: adicionar script de verificação dos serviços antes de rodar os testes
+  before_script:
+    - sleep 60
+    - *configure_build_environment
+    - *execute_database_scripts
+  script:
+    - eval $TEST_SCRIPT
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+    paths:
+      - target/*
+    expire_in: 2 days
+  rules:
+    - if: $SKIP_JAVA_TESTS != "true"
+  needs:
+    - job: build
+
+.sonarqube_analysis: &sonarqube_analysis
+  stage: analysis
+  variables:
+    GIT_DEPTH: "0"
+    SONAR_USER_HOME: ".sonar"
+  script:
+    - eval $ANALYSIS_SCRIPT
+  allow_failure: true
+  needs:
+    - job: build
+      artifacts: true
+    - job: tests
+      artifacts: true
+      optional: true
+  rules:
+    - if: $SKIP_SONARQUBE_ANALYSIS != "true"
+
+sonarqube-analysis-prod:
+  <<: *sonarqube_analysis
+  variables:
+    SONAR_HOST_URL: $SFZ_PROD_SONAR_HOST_URL
+    SONAR_TOKEN: $SFZ_PROD_SONAR_TOKEN
+
+sonarqube-analysis-desenv:
+  <<: *sonarqube_analysis
+  variables:
+    SONAR_HOST_URL: $SFZ_DESENV_SONAR_HOST_URL
+    SONAR_TOKEN: $SFZ_DESENV_SONAR_TOKEN
+    ANALYSIS_PROJECT_KEY: $CI_PROJECT_NAME-$CI_COMMIT_BRANCH
+  rules:
+    - if: '$CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH == "main"'
+
+dependency-check-analysis:
+  stage: analysis
+  variables:
+    DC_PROJECT: $CI_PROJECT_NAME
+  script:
+    - bash <(curl -sL http://repositorio-v2.sefaz.al.gov.br/repository/scripts/seguranca/dependency-check.sh)
+    - bash <(curl -sL http://repositorio-v2.sefaz.al.gov.br/repository/scripts/seguranca/vulnerability-check.sh)
+  artifacts:
+    name: odc-reports
+    paths:
+      - odc-reports/*
+  needs:
+    - job: build
+      artifacts: true
+  rules:
+    - if: '$SKIP_DEPENDENCY_CHECK_ANALYSIS != "true" && $CI_COMMIT_BRANCH == "main"'
+
+push-image:
+  stage: publish
+  script:
+    - eval $PUSH_IMAGE_SCRIPT
+  needs:
+    - job: build
+      artifacts: true
+    - job: tests
+      artifacts: true
+      optional: true
+    - job: dependency-check-analysis
+      optional: true
+    - job: sonarqube-analysis-prod
+      optional: true
+    - job: sonarqube-analysis-desenv
+      optional: true

@@ -40,6 +40,17 @@ class TemplateApplicationTest {
 	}
 
 	@Test
+	void deveriaNegarAcessoEndpointProtegido() throws Exception {
+
+		var resultado = mockMvc.perform(get("/api/401-endpoint"));
+
+		resultado.andExpect(status().isUnauthorized())
+				.andExpect(jsonPath("$.title", equalTo("Unauthorized")))
+				.andExpect(jsonPath("$.detail", equalTo("Full authentication is required to access this resource")));
+
+	}
+
+	@Test
 	@Rollback
 	void jpaDeveFuncionarComoEsperado() {
 
@@ -57,4 +68,5 @@ class TemplateApplicationTest {
 		Assertions.assertThat(contaRecuperada.get().getSaldo()).isEqualTo(saldo);
 
 	}
+
 }

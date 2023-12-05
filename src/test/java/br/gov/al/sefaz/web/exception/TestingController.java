@@ -5,13 +5,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/test")
 public class TestingController {
 
     @GetMapping
-    @RequestMapping("/exception-translator")
-    public String test() {
+    @RequestMapping("/test/exception-translator")
+    public String testExceptionTranslator() {
         throw new UnsupportedOperationException("Exceção de teste");
+    }
+
+    @GetMapping
+    @RequestMapping("/api/401-endpoint")
+    public String test403Endpoint() {
+        return "OK";
     }
 
 }
